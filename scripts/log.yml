@@ -1,0 +1,14 @@
+version: "3"
+tasks:
+  app:
+    desc: Logs the application
+    cmds:
+      - docker compose logs app -f
+  db:
+    desc: Logs the database
+    cmds:
+      - docker compose logs database -f
+  adminer:
+    desc: Logs adminer application
+    cmds:
+      - docker compose logs adminer -f

@@ -1,0 +1,14 @@
+version: "3"
+tasks:
+  app:
+    desc: Runs bash in the application container
+    cmds:
+      - docker compose exec app bash
+  db:
+    desc: Runs PSQL in the database container
+    cmds:
+      - docker compose exec database psql -U user
+  adminer:
+    desc: Runs ash in the adminer container
+    cmds:
+      - docker compose exec adminer ash

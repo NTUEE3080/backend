@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  rp:
+    image: ${REVERSEPROXY_IMAGE}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/traefik/certs:/etc/certs/
+    ports:
+      - "443:443"
+      - "80:80"
+
+  adminer:
+    image: ${ADMINER_IMAGE}
+
+  app:
+    image: ${CORE_IMAGE}
+    depends_on:
+      - postgres
+    environment:
+      COMPOSE_CONVERT_WINDOWS_PATHS: 1
+      
+      # Database Configuration
+      MIGRATE: auto
+      DB_CONNECT_TRIES: 50
+      CONNECTION_STRING: Host=database;Port=5432;Database=postgres;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+
+      # ASP NET configuration
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:80
+      
+      # Auth0 Configuration
+      AUTH0_AUDIENCE: https://coursecupid
+      AUTH0_AUTHORITY: https://coursecupid.au.auth0.com/
+    
+  database:
+    image: postgres:14.1
+    environment:
+      COMPOSE_CONVERT_WINDOWS_PATHS: 1
+      PGDATA: /var/lib/postgresql/data/pitapairing
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+    volumes:
+      - pitapairing-db-data:/var/lib/postgresql/data/pitapairing
+
+volumes:
+  pitapairing-db-data:
+    external: true

@@ -1,0 +1,51 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches-ignore:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        include:
+          - image-name: core
+            dockerfile: Dockerfile
+            context: .
+          - image-name: reverse_proxy
+            dockerfile: ./ops/services/traefik/Dockerfile
+            context: ./ops/services/traefik/
+          - image-name: adminer
+            dockerfile: ./ops/services/adminer/Dockerfile
+            context: ./ops/services/adminer/
+    env:
+      STRAT_DOCKER_IMAGE: ${{ matrix.image-name }}
+      STRAT_DOCKERFILE: ${{ matrix.dockerfile }}
+      STRAT_DOCKER_CONTEXT: ${{ matrix.context }}
+    outputs:
+      core_ref: ${{ steps.buildpush.outputs.ref_core }}
+      reverse_proxy_ref: ${{ steps.buildpush.outputs.ref_reverse_proxy }}
+      adminer_ref: ${{ steps.buildpush.outputs.ref_adminer }}
+
+    steps:
+      - name: Checkout Git
+        uses: actions/checkout@v2.3.4
+
+      - name: Inject Github Variables
+        uses: rlespinasse/github-slug-action@v3.x
+      - id: buildpush
+        name: Build and Push Docker
+        run: ./scripts/ci/ci-docker.sh
+        env:
+          CI_DOCKER_IMAGE: ${{ env.STRAT_DOCKER_IMAGE }}
+          CI_DOCKER_CONTEXT: ${{ env.STRAT_DOCKER_CONTEXT }}
+          CI_DOCKERFILE: ${{ env.STRAT_DOCKERFILE }}
+
+          DOMAIN: docker.pkg.github.com
+          GITHUB_REPO_REF: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_BRANCH: ${{ env.GITHUB_REF_SLUG }}
+
+          DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          DOCKER_USER: ${{ github.actor }}

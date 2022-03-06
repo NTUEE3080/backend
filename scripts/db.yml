@@ -1,0 +1,15 @@
+version: "3"
+tasks:
+  migrate:
+    desc: Create a new migration for Entity Framework
+    cmds:
+      - dotnet ef migrations add {{.CLI_ARGS}}
+  remove:
+    desc: Remove migration for Entity Framework
+    cmds:
+      - dotnet ef migrations remove {{.CLI_ARGS}}
+  reset:
+    desc: Reset DB data
+    cmds:
+      - docker volume remove pitapairing-db-data
+      - docker volume create pitapairing-db-data

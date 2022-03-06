@@ -1,0 +1,53 @@
+---
+- hosts: all
+  become: true
+  gather_facts: false
+  vars_files:
+    - values.yaml
+  tasks:
+    - name: Deployment
+      block:
+        - name: Create traefik SSL certs mount
+          file:
+            path: "/etc/traefik/certs"
+            state: directory
+            mode: "0755"
+
+        - name: Ensure /app directory exist
+          ansible.builtin.file:
+            path: /app/
+            state: directory
+            mode: "0644"
+
+        - name: Update Stack file
+          copy:
+            src: docker-compose.yaml
+            dest: /app/
+            mode: 0644
+
+        - name: Login to Docker
+          docker_login:
+            state: present
+            registry: "{{ docker_registry }}"
+            username: "{{ docker_user }}"
+            password: "{{ docker_password }}"
+
+        - name: Pull Images
+          docker_image:
+            name: "{{ item.value }}"
+            source: pull
+          with_dict: "{{ docker_images }}"
+
+        - name: Deploy Stack
+          environment: "{{ env | combine(docker_images) }}"
+          docker_stack:
+            prune: true
+            resolve_image: always
+            state: present
+            name: ee3080
+            compose:
+              - /app/docker-compose.yaml
+      always:
+        - name: Logout of Docker
+          docker_login:
+            state: absent

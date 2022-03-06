@@ -1,0 +1,21 @@
+http:
+  routers:
+    adminer:
+      rule: "Host(`adminer.ee3080.cyanprint.dev`)"
+      service: "adminer"
+      tls:
+        certResolver: myresolver
+    core:
+      rule: "Host(`core.ee3080.cyanprint.dev`)"
+      service: "core"
+      tls:
+        certResolver: myresolver
+  services:
+    adminer:
+      loadBalancer:
+        servers:
+          - url: "http://adminer:8080"
+    core:
+      loadBalancer:
+        servers:
+          - url: "http://app"

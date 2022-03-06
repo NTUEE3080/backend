@@ -1,0 +1,51 @@
+version: "2.6"
+
+services:
+  adminer:
+    build: services/adminer
+    ports:
+      - "9051:8080"
+    tty: true
+
+  app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - database
+    environment:
+      COMPOSE_CONVERT_WINDOWS_PATHS: 1
+      
+      # Database configuration
+      MIGRATE: auto
+      DB_CONNECT_TRIES: 50
+      POSTGRES_PASSWORD: securepassword
+      POSTGRES_USER: user
+      
+      # ASP NET configurations
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:80
+
+      # Auth0 Configuration
+      AUTH0_AUDIENCE: https://pitapairing.ee3080.cyanprint.dev
+      AUTH0_AUTHORITY: https://pitapairing.au.auth0.com/
+    tty: true
+    ports:
+      - "9050:80"
+
+  database:
+    image: postgres:14.1
+    tty: true
+    ports:
+      - "5430"
+    environment:
+      COMPOSE_CONVERT_WINDOWS_PATHS: 1
+      PGDATA: /var/lib/postgresql/data/pitapairing
+      POSTGRES_PASSWORD: securepassword
+      POSTGRES_USER: user
+    volumes:
+      - pitapairing-db-data:/var/lib/postgresql/data/pitapairing
+
+volumes:
+  pitapairing-db-data:
+    external: true

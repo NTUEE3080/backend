@@ -1,0 +1,21 @@
+﻿{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "PitaPairing": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "DEV_ENV": "local",
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "MIGRATE": "auto",
+        "DB_CONNECT_TRIES": "50",
+        "ASPNETCORE_URLS": "http://+:80",
+        "POSTGRES_PASSWORD": "securepassword",
+        "POSTGRES_USER": "user",
+        "COMPOSE_CONVERT_WINDOWS_PATHS": "1"
+      }
+    },
+  }
+}

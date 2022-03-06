@@ -1,0 +1,26 @@
+version: "3"
+
+tasks:
+  dotnet:
+    desc: Format .NET code
+    cmds:
+      - dotnet format -v n ./PitaPairing.csproj
+  sh:
+    desc: Format shellscripts
+    cmds:
+      - shfmt -w .
+  md:
+    desc: Formats Markdown with prettier
+    cmds:
+      - prettier -w "**/*.MD"
+
+  yaml:
+    desc: Formats YAML with prettier
+    cmds:
+      - prettier -w "**/*.yaml"
+      - prettier -w "**/*.yml"
+
+  nix:
+    desc: Formats Nix files
+    cmds:
+      - nixpkgs-fmt .

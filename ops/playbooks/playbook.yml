@@ -1,0 +1,2 @@
+- import_playbook: ./modules/install-docker.yml
+- import_playbook: ./modules/deploy-stack.yml
