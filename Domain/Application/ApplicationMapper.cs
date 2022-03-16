@@ -16,22 +16,22 @@ public static class ApplicationDataMapper
             0 => ApplicationStatus.Accepted,
             1 => ApplicationStatus.Rejected,
             2 => ApplicationStatus.Pending,
-            _ => ((Func<ApplicationStatus>) (() =>
-            {
-                Log.Error("No such Application Status {@Status}", status);
-                throw new KeyNotFoundException($"No such Application status: {status}");
-            }))()
+            _ => ((Func<ApplicationStatus>)(() =>
+           {
+               Log.Error("No such Application Status {@Status}", status);
+               throw new KeyNotFoundException($"No such Application status: {status}");
+           }))()
         };
     }
 
     public static byte ToData(this ApplicationStatus status)
     {
-        return (byte) status;
+        return (byte)status;
     }
 
     public static ApplicationProps ToProps(this ApplicationData d)
     {
-        return new ApplicationProps(d.Status.ToDomain(), d.User.ToPrincipal(),
+        return new ApplicationProps(d.PostId, d.Status.ToDomain(), d.User.ToPrincipal(),
             d.Offers?.Select(x => x.ToPrincipal()) ?? new List<IndexPrincipal>());
     }
 
@@ -62,8 +62,9 @@ public static class ApplicationWebMapper
 
     public static ApplicationPrincipalRes ToResp(this ApplicationPrincipal p)
     {
-        var (guid, (status, userPrincipal, indexPrincipals)) = p;
+        var (guid, (postId, status, userPrincipal, indexPrincipals)) = p;
         return new ApplicationPrincipalRes(guid,
+            postId,
             ApplicationStatusConverter.EnumToString[status],
             userPrincipal.ToResp(),
             indexPrincipals?.Select(x => x.ToResp()) ?? new List<IndexPrincipalRes>());

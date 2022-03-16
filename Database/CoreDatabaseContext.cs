@@ -36,18 +36,18 @@ public class CoreDbContext : DbContext
 
         //  configuring module
         var module = modelBuilder.Entity<ModuleData>();
-        module.HasIndex(x => new {x.Semester, x.CourseCode})
+        module.HasIndex(x => new { x.Semester, x.CourseCode })
             .IsUnique();
         module.HasIndex(x => x.Name);
 
         // configuring index
         var index = modelBuilder.Entity<IndexData>();
-        index.HasIndex(x => new {x.ModuleId, x.Code})
+        index.HasIndex(x => new { x.ModuleId, x.Code })
             .IsUnique();
 
         // configuring posts
         var post = modelBuilder.Entity<PostData>();
-        post.HasIndex(x => new {x.UserId, x.IndexId}).IsUnique();
+        post.HasIndex(x => new { x.UserId, x.IndexId }).IsUnique();
 
         modelBuilder.Entity<PostData>()
             .HasOne(x => x.Index)
@@ -61,7 +61,13 @@ public class CoreDbContext : DbContext
             .UsingEntity(j => j.ToTable("PostsIndexes"));
 
         var application = modelBuilder.Entity<ApplicationData>();
-        application.HasIndex(x => new {x.PostId, x.UserId})
+        application.HasIndex(x => new { x.PostId, x.UserId })
             .IsUnique();
+
+        // many ot many of application and indexes
+        modelBuilder.Entity<ApplicationData>()
+            .HasMany(p => p.Offers)
+            .WithMany(p => p.RelatedApplications)
+            .UsingEntity(j => j.ToTable("ApplicationIndexes"));
     }
 }

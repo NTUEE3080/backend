@@ -14,6 +14,7 @@ public record CreatePostReq(
 
 public record PostPrincipalResp(
     Guid Id,
+    Guid OwnerId,
     IndexPrincipalRes Index,
     ModulePrincipalRes Module,
     bool Completed,

@@ -1,6 +1,6 @@
 namespace PitaPairing.Errors;
 
-public class UnsupportedOperationError: BaseErrorException
+public class UnsupportedOperationError : BaseErrorException
 {
     public UnsupportedOperationError(string message, string detail) : base(message, detail, new Dictionary<string, string[]>(),
         StatusCodes.Status400BadRequest)

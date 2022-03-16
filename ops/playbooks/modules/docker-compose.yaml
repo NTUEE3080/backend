@@ -19,7 +19,7 @@ services:
       - postgres
     environment:
       COMPOSE_CONVERT_WINDOWS_PATHS: 1
-      
+
       # Database Configuration
       MIGRATE: auto
       DB_CONNECT_TRIES: 50
@@ -28,11 +28,11 @@ services:
       # ASP NET configuration
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:80
-      
+
       # Auth0 Configuration
       AUTH0_AUDIENCE: https://coursecupid
       AUTH0_AUTHORITY: https://coursecupid.au.auth0.com/
-    
+
   database:
     image: postgres:14.1
     environment:

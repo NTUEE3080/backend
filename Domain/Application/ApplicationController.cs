@@ -54,6 +54,50 @@ namespace PitaPairing.Domain.Application
             }
         }
 
+        [HttpGet("full")]
+        public ActionResult<IEnumerable<ApplicationRes>> GetFullAll(Guid? moduleId, Guid? indexId, Guid? postId,
+            Guid? applierId, Guid? accepterId)
+        {
+            try
+            {
+                var applications = _db.Applications
+                    .Include(x => x.Post)
+                    .ThenInclude(x => x.Module)
+
+                    // Index Principal
+                    .Include(x => x.Post)
+                    .ThenInclude(x => x.Index)
+                    .ThenInclude(x => x.Info)
+
+                    // Looking For
+                    .Include(x => x.Post)
+                    .ThenInclude(x => x.LookingFor)
+                    .ThenInclude(x => x.Info)
+
+                    //
+                    .Include(x => x.User)
+                    .Include(x => x.Offers)
+                    .ThenInclude(x => x.Info)
+                    .AsQueryable();
+
+                if (moduleId != null) applications = applications.Where(x => x.Post.ModuleId == moduleId);
+                if (indexId != null) applications = applications.Where(x => x.Post.IndexId == indexId);
+                if (postId != null) applications = applications.Where(x => x.Post.Id == postId);
+                if (applierId != null) applications = applications.Where(x => x.UserId == applierId);
+                if (accepterId != null) applications = applications.Where(x => x.Post.UserId == accepterId);
+
+                var ret = applications.Select(x => x.ToDomain().ToResp()).ToArray();
+                return Ok(ret);
+            }
+            catch (Exception e)
+            {
+                if (e is not BaseErrorException)
+                    _l.LogCritical(e,
+                        "Failed to list posts. Query:  PostId: {@PostId}, ModuleId: {@ModuleId}, IndexId: {@IndexId}, AccepterId: {@AccepterId}, ApplierId: {@ApplierId}",
+                        postId, moduleId, indexId, accepterId, applierId);
+                throw;
+            }
+        }
 
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<ApplicationRes>> Get(Guid id)
@@ -61,9 +105,24 @@ namespace PitaPairing.Domain.Application
             try
             {
                 var application = await _db.Applications
+                    // Module Principal
                     .Include(x => x.Post)
+                    .ThenInclude(x => x.Module)
+
+                    // Index Principal
+                    .Include(x => x.Post)
+                    .ThenInclude(x => x.Index)
+                    .ThenInclude(x => x.Info)
+
+                    // Looking For
+                    .Include(x => x.Post)
+                    .ThenInclude(x => x.LookingFor)
+                    .ThenInclude(x => x.Info)
+
+                    //
                     .Include(x => x.User)
                     .Include(x => x.Offers)
+                    .ThenInclude(x => x.Info)
                     .FirstOrDefaultAsync(x => x.Id == id);
                 if (application == null)
                     throw new NotFoundError("Application Not Found",
@@ -80,7 +139,7 @@ namespace PitaPairing.Domain.Application
 
 
         [HttpPost("{postId:Guid}")]
-        public async Task<ActionResult<ApplicationRes>> Apply(Guid postId, [FromBody] CreateApplicationReq req)
+        public async Task<ActionResult> Apply(Guid postId, [FromBody] CreateApplicationReq req)
         {
             try
             {
@@ -116,9 +175,12 @@ namespace PitaPairing.Domain.Application
                 var r = e switch
                 {
                     DbUpdateException
+                    {
+                        InnerException: PostgresException
                         {
-                            InnerException: PostgresException {SqlState: "23505", ConstraintName: "IX_Applications_PostId_UserId"}
-                        } =>
+                            SqlState: "23505", ConstraintName: "IX_Applications_PostId_UserId"
+                        }
+                    } =>
                         new UniqueConflictError("Application already exist",
                             "A application by this user of to this post already exist"),
                     _ => null,

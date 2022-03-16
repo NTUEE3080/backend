@@ -6,6 +6,7 @@ using PitaPairing.Domain.Module;
 namespace PitaPairing.Domain.Post;
 
 public record PostProps(
+  Guid OwnerId,
   ModulePrincipal Module,
   IndexPrincipal Index,
   IEnumerable<IndexPrincipal> LookingFor,
@@ -17,4 +18,3 @@ public record PostPrincipal(
 );
 
 public record Post(UserPrincipal User, PostPrincipal Principal, IEnumerable<ApplicationPrincipal> Applications);
-

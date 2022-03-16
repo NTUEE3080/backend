@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using PitaPairing.Domain.Application;
 using PitaPairing.Domain.Module;
 using PitaPairing.Domain.Post;
 
@@ -34,7 +35,8 @@ public record IndexData
     public Guid ModuleId { get; set; }
     public ModuleData Module { get; set; }
     public IEnumerable<IndexPropsData> Info { get; set; }
-    
     public IEnumerable<PostData> RelatedPosts { get; set; }
+
+    public IEnumerable<ApplicationData> RelatedApplications { get; set; }
 }
 #pragma warning restore CS8618

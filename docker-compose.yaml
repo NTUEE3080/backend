@@ -8,20 +8,20 @@ services:
     tty: true
 
   app:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     depends_on:
       - database
     environment:
       COMPOSE_CONVERT_WINDOWS_PATHS: 1
-      
+
       # Database configuration
       MIGRATE: auto
       DB_CONNECT_TRIES: 50
       POSTGRES_PASSWORD: securepassword
       POSTGRES_USER: user
-      
+
       # ASP NET configurations
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:80

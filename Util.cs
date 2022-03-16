@@ -4,6 +4,6 @@ namespace PitaPairing;
 
 public static class Util
 {
-    
-    
+
+
 }

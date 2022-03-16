@@ -1,0 +1,19 @@
+version: "3"
+tasks:
+  start:
+    desc: Start Rider IDE
+    cmds:
+      - tmux new-session -s rider@pp -d 'unset PYTHONNOUSERSITE; while true; do projector run Rider; done'
+  stop:
+    desc: Stops Rider IDE
+    cmds:
+      - tmux kill-session -t rider@pp
+  enter:
+    desc: Access the tmux session for the IDE
+    cmds:
+      - tmux at -t rider@pp
+  restart:
+    desc: Restarts the IDE
+    cmds:
+      - task: stop
+      - task: start

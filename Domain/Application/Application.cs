@@ -29,6 +29,7 @@ public class ApplicationStatusConverter
 }
 
 public record ApplicationProps(
+    Guid PostId,
     ApplicationStatus Accepted,
     UserPrincipal User,
     IEnumerable<IndexPrincipal> Offer
@@ -41,7 +42,7 @@ public record Application(
     ApplicationPrincipal Principal,
     PostPrincipal Post);
 
-public record ApplicationPrincipalRes(Guid Id, string Status, UserPrincipalResp User,
+public record ApplicationPrincipalRes(Guid Id, Guid PostId, string Status, UserPrincipalResp User,
     IEnumerable<IndexPrincipalRes> Offers);
 
 public record ApplicationRes(ApplicationPrincipalRes Principal, PostPrincipalResp Post);

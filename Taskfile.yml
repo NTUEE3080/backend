@@ -5,6 +5,7 @@ includes:
   log: ./scripts/log.yml
   enter: ./scripts/enter.yml
   db: ./scripts/db.yml
+  ide: ./scripts/ide.yml
 tasks:
   deploy:
     desc: Deploy to target machine
@@ -36,7 +37,7 @@ tasks:
     desc: Setup required docker volumes for development
     cmds:
       - docker volume create pitapairing-db-data
-      
+
   dev:
     watch: true
     desc: Start development mode

@@ -1,6 +1,6 @@
 namespace PitaPairing.Errors;
 
-public class UnauthorizedError: BaseErrorException
+public class UnauthorizedError : BaseErrorException
 {
     public UnauthorizedError(string message, string detail) : base(message, detail, new Dictionary<string, string[]>(),
         StatusCodes.Status404NotFound)

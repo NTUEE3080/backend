@@ -26,13 +26,13 @@ public abstract class BaseErrorException : Exception
     public string Detail { get; }
     public int StatusCode { get; }
     public Dictionary<string, string[]> AdditionalInfo { get; }
-    
+
     public BaseErrorException AddInfo(string field, params string[] fieldDetails)
     {
         this.AdditionalInfo[field] = fieldDetails;
         return this;
     }
-    
+
 }
 
 public static class ErrorMiddleware
@@ -41,7 +41,7 @@ public static class ErrorMiddleware
     {
         return (setup) =>
         {
-            setup.IncludeExceptionDetails = (_, _) => e.IsDevelopment();  
+            setup.IncludeExceptionDetails = (_, _) => e.IsDevelopment();
             setup.Map<BaseErrorException>(BaseErrorExceptionMapper);
         };
     }

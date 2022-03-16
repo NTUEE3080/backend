@@ -81,7 +81,7 @@ public class IndexController : ControllerBase
         try
         {
             _l.LogInformation("ModelState Valid: {@ModelStateValid}", ModelState.IsValid);
-            
+
             var indexDatas = modules.Select(x =>
             {
                 var (moduleId, prop) = x.ToDomain();

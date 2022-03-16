@@ -10,8 +10,8 @@ public class ApplicationValidator : AbstractValidator<CreateApplicationReq>
         RuleFor(x => x.OfferId).MinCount(1);
         RuleForEach(x => x.OfferId).ChildRules(c =>
         {
-            c.RuleFor(x => x).NonEmptyGuid(); 
-            
+            c.RuleFor(x => x).NonEmptyGuid();
+
         });
     }
 }

@@ -81,7 +81,7 @@ public class PostController : ControllerBase
                 .AsQueryable()
                 .FirstOrDefaultAsync(x => x.Id == id);
             if (post == null) throw new NotFoundError("Post Not Found", $"Post of id '{id}' does not exist");
-            return Ok(post.ToPrincipal().ToResp());
+            return Ok(post.ToDomain().ToResp());
         }
         catch (Exception e)
         {
@@ -201,7 +201,7 @@ public class PostController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<PostResp>> Create([FromBody] CreatePostReq req)
+    public async Task<ActionResult> Create([FromBody] CreatePostReq req)
     {
         try
         {
@@ -250,9 +250,9 @@ public class PostController : ControllerBase
             var r = e switch
             {
                 DbUpdateException
-                    {
-                        InnerException: PostgresException {SqlState: "23505", ConstraintName: "IX_Posts_UserId_IndexId"}
-                    } =>
+                {
+                    InnerException: PostgresException { SqlState: "23505", ConstraintName: "IX_Posts_UserId_IndexId" }
+                } =>
                     new UniqueConflictError("Post already exist",
                         "A post by this user of this index already exist"),
                 _ => null,

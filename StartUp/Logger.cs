@@ -11,7 +11,7 @@ public static class Logger
             .Enrich.FromLogContext()
             .WriteTo.Console()
             .CreateLogger();
-        
+
         Log.Logger = logger;
         var loggerFactory = new LoggerFactory().AddSerilog(logger);
         return loggerFactory;

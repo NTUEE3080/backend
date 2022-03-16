@@ -29,6 +29,9 @@ public static class IndexDataMapper
             Day.Wednesday => "Wednesday",
             Day.Thursday => "Thursday",
             Day.Friday => "Friday",
+            Day.Saturday => "Saturday",
+            Day.Sunday => "Sunday",
+            Day.Free => "Free",
             _ => throw new ArgumentOutOfRangeException(nameof(day), day, null)
         };
     }
@@ -48,7 +51,6 @@ public static class IndexDataMapper
                     EndTime = x.Stop.Serialize(),
                     Venue = x.Venue,
                 }).ToArray()
-                
         };
     }
 
@@ -65,6 +67,9 @@ public static class IndexDataMapper
             "Wednesday" => Day.Wednesday,
             "Thursday" => Day.Thursday,
             "Friday" => Day.Friday,
+            "Saturday" => Day.Saturday,
+            "Sunday" => Day.Sunday,
+            "Free" => Day.Free,
             _ => throw new ArgumentOutOfRangeException(nameof(day), day, null)
         };
     }

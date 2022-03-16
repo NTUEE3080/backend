@@ -1,6 +1,6 @@
 namespace PitaPairing.Errors;
 
-public class UserNotRegisteredError: BaseErrorException
+public class UserNotRegisteredError : BaseErrorException
 {
     public UserNotRegisteredError(string message, string detail) : base(message, detail, new Dictionary<string, string[]>(), StatusCodes.Status401Unauthorized)
     {

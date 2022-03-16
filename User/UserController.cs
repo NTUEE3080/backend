@@ -38,6 +38,30 @@ public class UserController : ControllerBase
         }
     }
 
+    [HttpGet("self")]
+    public async Task<ActionResult<UserPrincipalResp>> Self()
+    {
+        try
+        {
+            var sub = Sub();
+            _logger.LogInformation("Sub: {@Sub}", sub);
+            if (sub == null)
+                throw new UnauthorizedError("Unauthorized",
+                    "Attempt to access protected API without valid Bearer containing 'sub'");
+            var user = await _db.Users
+                .FirstOrDefaultAsync(x => x.Sub == sub);
+            if (user == null) throw new NotFoundError("User not found", $"User with Sub '{sub}' does not exist");
+            var resp = user.ToPrincipal()
+                .ToResp();
+            return Ok(resp);
+        }
+        catch (Exception e)
+        {
+            if (e is not BaseErrorException) _logger.LogCritical(e, "Fail to retrieve list of users");
+            throw;
+        }
+    }
+
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<UserPrincipalResp>> Get(Guid id)
     {
@@ -83,16 +107,16 @@ public class UserController : ControllerBase
             var r = ex switch
             {
                 DbUpdateException
-                    {
-                        InnerException: PostgresException {SqlState: "23505", ConstraintName: "IX_Users_Sub"}
-                    } =>
+                {
+                    InnerException: PostgresException { SqlState: "23505", ConstraintName: "IX_Users_Sub" }
+                } =>
                     new UniqueConflictError("User already exist",
                             "A user with this 'sub' field already exist")
                         .AddField("sub", $"User with sub '{sub}' already exist"),
                 DbUpdateException
-                    {
-                        InnerException: PostgresException {SqlState: "23505", ConstraintName: "IX_Users_Email"}
-                    } =>
+                {
+                    InnerException: PostgresException { SqlState: "23505", ConstraintName: "IX_Users_Email" }
+                } =>
                     new UniqueConflictError("User already exist",
                             "A user with this 'email' field already exist")
                         .AddField("sub", $"User with email '{req.Email}' already exist"),

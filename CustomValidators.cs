@@ -41,8 +41,8 @@ public static class CustomValidators
         this IRuleBuilder<T, string> ruleBuilder)
     {
         return ruleBuilder
-            .Must(d => d is "Monday" or "Tuesday" or "Wednesday" or "Thursday" or "Friday")
-            .WithMessage("Must be a 'day': 'Monday', 'Tuesday', 'Wednesday', 'Thursday' or 'Friday'");
+            .Must(d => d is "Monday" or "Tuesday" or "Wednesday" or "Thursday" or "Friday" or "Saturday" or "Sunday" or "Free")
+            .WithMessage("Must be a 'day': 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday', or 'Free'");
     }
 
 
