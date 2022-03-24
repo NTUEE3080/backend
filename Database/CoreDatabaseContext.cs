@@ -49,25 +49,28 @@ public class CoreDbContext : DbContext
         var post = modelBuilder.Entity<PostData>();
         post.HasIndex(x => new { x.UserId, x.IndexId }).IsUnique();
 
-        modelBuilder.Entity<PostData>()
+        post
             .HasOne(x => x.Index)
             .WithMany()
             .HasForeignKey(p => p.IndexId);
 
         // Many to Many of Post and Indexes
-        modelBuilder.Entity<PostData>()
+        post
             .HasMany(p => p.LookingFor)
             .WithMany(p => p.RelatedPosts)
             .UsingEntity(j => j.ToTable("PostsIndexes"));
 
-        var application = modelBuilder.Entity<ApplicationData>();
-        application.HasIndex(x => new { x.PostId, x.UserId })
-            .IsUnique();
+        // MAny to Many Self relationship
+        post.HasMany(p => p.Offers)
+            .WithOne(p => p.Post)
+            .HasForeignKey(p => p.PostId);
 
-        // many ot many of application and indexes
-        modelBuilder.Entity<ApplicationData>()
-            .HasMany(p => p.Offers)
-            .WithMany(p => p.RelatedApplications)
-            .UsingEntity(j => j.ToTable("ApplicationIndexes"));
+        post.HasMany(p => p.Applications)
+            .WithOne(a => a.ApplierPost)
+            .HasForeignKey(a => a.ApplierPostId);
+
+        var application = modelBuilder.Entity<ApplicationData>();
+        application.HasIndex(x => new { x.PostId, x.ApplierPostId })
+            .IsUnique();
     }
 }

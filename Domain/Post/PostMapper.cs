@@ -9,21 +9,29 @@ public static class PostDataMapper
 {
     public static PostProps ToProps(this PostData data)
     {
-        return new PostProps(data.UserId, data.Module.ToPrincipal(), data.Index.ToPrincipal(),
+        return new PostProps(data.User.ToPrincipal(), data.Module.ToPrincipal(), data.Index.ToPrincipal(),
             data.LookingFor?.Select(x => x.ToPrincipal()) ?? new List<IndexPrincipal>(),
             data.Completed
         );
     }
 
+
     public static PostPrincipal ToPrincipal(this PostData data)
     {
         return new PostPrincipal(data.Id, data.ToProps());
     }
-
+    public static TradePrincipal ToTradePrincipal(this PostData data, byte status)
+    {
+        return new TradePrincipal(data.ToPrincipal(), status.ToDomain());
+    }
     public static Post ToDomain(this PostData data)
     {
-        return new Post(data.User.ToPrincipal(), data.ToPrincipal(),
-            data.Applications?.Select(x => x.ToPrincipal()) ?? new List<ApplicationPrincipal>());
+        var offers = data.Offers.Where(x => !x.ApplierPost.Completed)
+            .Select(x => x.ApplierPost.ToTradePrincipal(x.Status));
+        var applications = data.Applications.Where(x => !x.ApplierPost.Completed)
+            .Select(x => x.Post.ToTradePrincipal(x.Status));
+
+        return new Post(data.ToPrincipal(), offers, applications);
     }
 }
 
@@ -40,21 +48,24 @@ public static class PostWebMapper
             UserId = userId,
         };
     }
-
+    public static TradePrincipalRes ToResp(this TradePrincipal p)
+    {
+        var ((guid, (owner, modulePrincipal, indexPrincipal, lookingFor, completed)), status) = p;
+        return new TradePrincipalRes(guid, owner.ToResp(), indexPrincipal.ToResp(), modulePrincipal.ToResp(),
+            lookingFor?.Select(x => x.ToResp()) ?? new List<IndexPrincipalRes>(), status.ToResp());
+    }
     public static PostPrincipalResp ToResp(this PostPrincipal p)
     {
-        var (guid, (ownerId, modulePrincipal, indexPrincipal, lookingFor, completed)) = p;
-        return new PostPrincipalResp(guid, ownerId, indexPrincipal.ToResp(), modulePrincipal.ToResp(), completed,
-            lookingFor?.Select(x => x.ToResp()) ?? new List<IndexPrincipalRes>());
+        var (guid, (owner, modulePrincipal, indexPrincipal, lookingFor, completed)) = p;
+        return new PostPrincipalResp(guid, owner.ToResp(), indexPrincipal.ToResp(), modulePrincipal.ToResp(),
+            lookingFor?.Select(x => x.ToResp()) ?? new List<IndexPrincipalRes>(), completed);
     }
 
     public static PostResp ToResp(this Post p)
     {
-        var (userPrincipal, postPrincipal, applicationPrincipals) = p;
+        var (postPrincipal, offers, application) = p;
 
-        return new PostResp(userPrincipal.ToResp(),
-            postPrincipal.ToResp(),
-            applicationPrincipals?.Select(x => x.ToResp()) ?? new List<ApplicationPrincipalRes>()
-        );
+        return new PostResp(postPrincipal.ToResp(), offers.Select(x => x.ToResp()),
+            application.Select(x => x.ToResp()));
     }
 }

@@ -26,16 +26,17 @@ public class PostController : ControllerBase
 
     [HttpGet]
     public ActionResult<IEnumerable<PostPrincipalResp>>
-        GetAll(string? semester, Guid? posterId, Guid? moduleId, Guid? indexId, Guid? lookId)
+        GetAll(string? semester, Guid? curateFor, Guid? posterId, Guid? moduleId, Guid? indexId, Guid? lookId,
+            bool? completed)
     {
         try
         {
             var posts = _db.Posts
-                .Include(x => x.Index)
-                .ThenInclude(x => x.Info)
-                .Include(x => x.LookingFor)
-                .ThenInclude(x => x.Info)
+                .Include(x => x.User)
+                .Include(x => x.Index).ThenInclude(x => x.Info)
+                .Include(x => x.LookingFor).ThenInclude(x => x.Info)
                 .Include(x => x.Module)
+                .Include(x => x.Offers).ThenInclude(x => x.ApplierPost)
                 .AsQueryable();
 
             if (semester != null) posts = posts.Where(x => x.Module.Semester == semester);
@@ -43,6 +44,10 @@ public class PostController : ControllerBase
             if (moduleId != null) posts = posts.Where(x => x.ModuleId == moduleId);
             if (indexId != null) posts = posts.Where(x => x.IndexId == indexId);
             if (lookId != null) posts = posts.Where(x => x.LookingFor.Any(index => index.Id == lookId));
+            if (completed != null) posts = posts.Where(x => x.Completed == completed);
+            if (curateFor != null)
+                posts = posts.Where(x =>
+                    x.Offers.All(a => a.ApplierPost.UserId != curateFor)); // haven't apply yet
 
             return Ok(posts.Select(x => x.ToPrincipal().ToResp()));
         }
@@ -66,17 +71,24 @@ public class PostController : ControllerBase
                 .Include(x => x.User)
 
                 // post principal
-                .Include(x => x.Index) // index principal
-                .ThenInclude(x => x.Info)
+                .Include(x => x.Index).ThenInclude(x => x.Info) // Index
                 .Include(x => x.Module) // module principal
-                .Include(x => x.LookingFor) // index list
+                .Include(x => x.LookingFor).ThenInclude(x => x.Info) // index list
+
+                // get applications
+                .Include(x => x.Applications).ThenInclude(x => x.Post).ThenInclude(x => x.User)
+                .Include(x => x.Applications).ThenInclude(x => x.Post).ThenInclude(x => x.Index)
+                .ThenInclude(x => x.Info)
+                .Include(x => x.Applications).ThenInclude(x => x.Post).ThenInclude(x => x.Module)
+                .Include(x => x.Applications).ThenInclude(x => x.Post).ThenInclude(x => x.LookingFor)
                 .ThenInclude(x => x.Info)
 
-                // application
-                .Include(x => x.Applications)
-                .ThenInclude(x => x.User)
-                .Include(x => x.Applications)
-                .ThenInclude(x => x.Offers)
+                // get offers
+                .Include(x => x.Offers).ThenInclude(x => x.ApplierPost).ThenInclude(x => x.User)
+                .Include(x => x.Offers).ThenInclude(x => x.ApplierPost).ThenInclude(x => x.Index)
+                .ThenInclude(x => x.Info)
+                .Include(x => x.Offers).ThenInclude(x => x.ApplierPost).ThenInclude(x => x.Module)
+                .Include(x => x.Offers).ThenInclude(x => x.ApplierPost).ThenInclude(x => x.LookingFor)
                 .ThenInclude(x => x.Info)
                 .AsQueryable()
                 .FirstOrDefaultAsync(x => x.Id == id);
@@ -96,27 +108,19 @@ public class PostController : ControllerBase
         try
         {
             var (guid, _) = await GetUser();
-            var post = await _db.Posts
-                .Include(x => x.Applications)
-                .FirstOrDefaultAsync(x => x.Id == postId);
+            var appl = await _db.Applications
+                .Include(x => x.Post)
+                .Include(x => x.ApplierPost)
+                .FirstOrDefaultAsync(x => x.PostId == postId && appId == x.ApplierPostId);
 
-            if (post == null) throw new NotFoundError("Post Not Found", $"Post with id '{postId}' does not exist");
-            if (guid != post.UserId && !IsAdmin())
+            if (appl == null)
+                throw new NotFoundError("Trade Not Found", $"Trade with id '{postId}' => '{appId}' does not exist");
+            if (guid != appl.Post.UserId && !IsAdmin())
                 throw new NoPermissionError("No permission", "Do not have permission to update the Post");
-            if (post.Completed)
-                throw new UnsupportedOperationError("Cannot Accept Completed Post",
-                    "The post is already completed by accepting an application. You can't accept it again");
-            var exist = post.Applications.Any(x => x.Id == appId);
-            if (!exist)
-                throw new NotFoundError("Application Not Found", $"Application with id '{appId}' does not exist");
-
-            foreach (var application in post.Applications)
-            {
-                if (application.Id == appId)
-                    application.Status = ApplicationStatus.Rejected.ToData();
-            }
-
-            post.Completed = false;
+            if (appl.Post.Completed || appl.ApplierPost.Completed)
+                throw new UnsupportedOperationError("Cannot Accept Completed Trade",
+                    "The trade is already completed by accepting an application. You can't accept it again");
+            appl.Status = ApplicationStatus.Rejected.ToData();
             await _db.SaveChangesAsync();
             return NoContent();
         }
@@ -137,30 +141,29 @@ public class PostController : ControllerBase
         try
         {
             var (guid, _) = await GetUser();
-            var post = await _db.Posts
-                .Include(x => x.Applications)
-                .FirstOrDefaultAsync(x => x.Id == postId);
+            var appl = await _db.Applications
+                .Include(x => x.Post)
+                .ThenInclude(x => x.Offers)
+                .Include(x => x.ApplierPost)
+                .FirstOrDefaultAsync(x => x.PostId == postId && appId == x.ApplierPostId);
 
-            if (post == null) throw new NotFoundError("Post Not Found", $"Post with id '{postId}' does not exist");
-            if (guid != post.UserId && !IsAdmin())
-                throw new NoPermissionError("No permission", "Do not have permission to update the Post");
+            if (appl == null)
+                throw new NotFoundError("Trade Not Found", $"Trade with '{postId}' => '{appId}' does not exist");
+            if (guid != appl.Post.UserId && !IsAdmin())
+                throw new NoPermissionError("No permission", "Do not have permission to accept the trade");
 
-            if (post.Completed)
-                throw new UnsupportedOperationError("Cannot Accept Completed Post",
-                    "The post is already completed by accepting an application. You can't accept it again");
-            var exist = post.Applications.Any(x => x.Id == appId);
-            if (!exist)
-                throw new NotFoundError("Application Not Found", $"Application with id '{appId}' does not exist");
+            if (appl.Post.Completed || appl.ApplierPost.Completed)
+                throw new UnsupportedOperationError("Cannot Accept Completed Trade",
+                    "The trade is already completed by accepting an application. You can't accept it again");
 
-            foreach (var application in post.Applications)
+            appl.Status = ApplicationStatus.Accepted.ToData();
+            appl.Post.Completed = true;
+            foreach (var offer in appl.Post.Offers)
             {
-                if (application.Id == appId)
-                    application.Status = ApplicationStatus.Accepted.ToData();
-                else
-                    application.Status = ApplicationStatus.Rejected.ToData();
+                offer.Status = ApplicationStatus.Accepted.ToData();
             }
 
-            post.Completed = true;
+            appl.ApplierPost.Completed = true;
             await _db.SaveChangesAsync();
             return NoContent();
         }

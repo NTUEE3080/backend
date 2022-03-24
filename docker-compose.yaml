@@ -47,5 +47,7 @@ services:
       - pitapairing-db-data:/var/lib/postgresql/data/pitapairing
 
 volumes:
+  testvol:
+    external: true
   pitapairing-db-data:
     external: true

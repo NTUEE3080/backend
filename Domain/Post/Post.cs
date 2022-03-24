@@ -6,15 +6,22 @@ using PitaPairing.Domain.Module;
 namespace PitaPairing.Domain.Post;
 
 public record PostProps(
-  Guid OwnerId,
-  ModulePrincipal Module,
-  IndexPrincipal Index,
-  IEnumerable<IndexPrincipal> LookingFor,
-  bool Completed);
+    UserPrincipal Owner,
+    ModulePrincipal Module,
+    IndexPrincipal Index,
+    IEnumerable<IndexPrincipal> LookingFor,
+    bool Completed);
 
 public record PostPrincipal(
-  Guid Id,
-  PostProps Props
+    Guid Id,
+    PostProps Props
 );
 
-public record Post(UserPrincipal User, PostPrincipal Principal, IEnumerable<ApplicationPrincipal> Applications);
+public record TradePrincipal(
+    PostPrincipal Principal,
+    ApplicationStatus Status
+    );
+
+public record Post(PostPrincipal Principal, IEnumerable<TradePrincipal> Offers, IEnumerable<TradePrincipal> Applied);
+
+public record CompletedPost(PostPrincipal Principal, PostPrincipal Traded);

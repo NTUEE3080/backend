@@ -20,8 +20,9 @@ public record PostData
     public IndexData Index { get; set; }
     public IEnumerable<IndexData> LookingFor { get; set; }
 
+    public IEnumerable<ApplicationData> Offers { get; set; }
+    public IEnumerable<ApplicationData> Applications { get; set; }
     public bool Completed { get; set; }
 
-    public IEnumerable<ApplicationData> Applications { get; set; }
 }
 #pragma warning restore CS8618

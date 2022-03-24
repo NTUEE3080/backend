@@ -5,8 +5,6 @@ using PitaPairing.User;
 
 namespace PitaPairing.Domain.Post;
 
-
-
 public record CreatePostReq(
     Guid ModulesId,
     Guid IndexId,
@@ -14,14 +12,23 @@ public record CreatePostReq(
 
 public record PostPrincipalResp(
     Guid Id,
-    Guid OwnerId,
+    UserPrincipalResp Owner,
     IndexPrincipalRes Index,
     ModulePrincipalRes Module,
-    bool Completed,
-    IEnumerable<IndexPrincipalRes> LookingFor
+    IEnumerable<IndexPrincipalRes> LookingFor,
+    bool Completed
+);
+
+public record TradePrincipalRes(
+    Guid Id,
+    UserPrincipalResp Owner,
+    IndexPrincipalRes Index,
+    ModulePrincipalRes Module,
+    IEnumerable<IndexPrincipalRes> LookingFor,
+    string Status
 );
 
 public record PostResp(
-    UserPrincipalResp User,
     PostPrincipalResp Post,
-    IEnumerable<ApplicationPrincipalRes> Applications);
+    IEnumerable<TradePrincipalRes> Offers,
+    IEnumerable<TradePrincipalRes> Applications);
