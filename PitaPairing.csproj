@@ -29,8 +29,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include=".github\workflows\cd.yaml" />
+      <Content Include=".github\workflows\dev_cd.yaml" />
       <Content Include=".github\workflows\ci.yaml" />
+      <Content Include=".github\workflows\prod_cd.yaml" />
       <Content Include=".github\workflow\ci.yaml" />
       <Content Remove=".github\workflow\**" />
     </ItemGroup>
@@ -45,6 +46,10 @@
 
     <ItemGroup>
       <None Remove=".github\workflow\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="ops\services\prod" />
     </ItemGroup>
 
 </Project>

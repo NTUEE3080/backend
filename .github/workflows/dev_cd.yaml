@@ -1,0 +1,85 @@
+name: Development Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    environment: dev
+    strategy:
+      matrix:
+        include:
+          - image-name: core
+            dockerfile: Dockerfile
+            context: .
+          - image-name: reverse_proxy
+            dockerfile: ./ops/services/dev/traefik/Dockerfile
+            context: ./ops/services/dev/traefik/
+          - image-name: adminer
+            dockerfile: ./ops/services/dev/adminer/Dockerfile
+            context: ./ops/services/dev/adminer/
+    env:
+      STRAT_DOCKER_IMAGE: ${{ matrix.image-name }}
+      STRAT_DOCKERFILE: ${{ matrix.dockerfile }}
+      STRAT_DOCKER_CONTEXT: ${{ matrix.context }}
+    outputs:
+      core_ref: ${{ steps.build-push.outputs.ref_core }}
+      reverse_proxy_ref: ${{ steps.build-push.outputs.ref_reverse_proxy }}
+      adminer_ref: ${{ steps.build-push.outputs.ref_adminer }}
+
+    steps:
+      - name: AtomiCloud CI Environment
+        uses: kirinnee/atomici-action@v2.1.2
+
+      - name: Checkout Git
+        uses: actions/checkout@v2.3.4
+
+      - name: Inject Github Variables
+        uses: rlespinasse/github-slug-action@v3.x
+
+      - id: build-push
+        name: Build and Push Docker
+        run: ./scripts/ci/ci-docker.sh
+        env:
+          CI_DOCKER_IMAGE: ${{ env.STRAT_DOCKER_IMAGE }}
+          CI_DOCKER_CONTEXT: ${{ env.STRAT_DOCKER_CONTEXT }}
+          CI_DOCKERFILE: ${{ env.STRAT_DOCKERFILE }}
+
+          DOMAIN: docker.pkg.github.com
+          GITHUB_REPO_REF: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_BRANCH: ${{ env.GITHUB_REF_SLUG }}
+
+          DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          DOCKER_USER: ${{ github.actor }}
+
+  deploy:
+    runs-on: ubuntu-20.04
+    environment: dev
+    needs: [build]
+    steps:
+      - name: AtomiCloud CI Environment
+        uses: kirinnee/atomici-action@v2.1.2
+
+      - name: Checkout Git
+        uses: actions/checkout@v2.3.4
+
+      - name: Deploy
+        env:
+          DEPLOY_DOCKER_USER: ${{ github.actor }}
+          DEPLOY_DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          PRIVATE_KEY_CONTENT: ${{ secrets.DEPLOY_SSH_PRV_KEY }}
+          CORE_IMAGE: ${{ needs.build.outputs.core_ref }}
+          REVERSEPROXY_IMAGE: ${{ needs.build.outputs.reverse_proxy_ref }}
+          ADMINER_IMAGE: ${{ needs.build.outputs.adminer_ref }}
+          TARGET_IP: ${{ secrets.TARGET_IP }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          DEPLOY_DOCKER_REGISTRY: docker.pkg.github.com
+        run: nix-shell nix/shells.nix -A dev --run './scripts/ci/generate-credentials.sh ./.ssh/deploy_rsa && ./scripts/ci/deploy.sh'
+      - name: Clean Up
+        if: always()
+        run: nix-shell -p coreutils --run './scripts/ci/clean-up-deploy.sh'

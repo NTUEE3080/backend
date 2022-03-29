@@ -1,12 +1,14 @@
-name: Continuous Deployment
+name: Development Deployment
 
 on:
   push:
     branches:
-      - main
+      - prod
+
 jobs:
   build:
     runs-on: ubuntu-20.04
+    environment: prod
     strategy:
       matrix:
         include:
@@ -14,11 +16,11 @@ jobs:
             dockerfile: Dockerfile
             context: .
           - image-name: reverse_proxy
-            dockerfile: ./ops/services/traefik/Dockerfile
-            context: ./ops/services/traefik/
+            dockerfile: ./ops/services/prod/traefik/Dockerfile
+            context: ./ops/services/prod/traefik/
           - image-name: adminer
-            dockerfile: ./ops/services/adminer/Dockerfile
-            context: ./ops/services/adminer/
+            dockerfile: ./ops/services/prod/adminer/Dockerfile
+            context: ./ops/services/prod/adminer/
     env:
       STRAT_DOCKER_IMAGE: ${{ matrix.image-name }}
       STRAT_DOCKERFILE: ${{ matrix.dockerfile }}
@@ -56,6 +58,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-20.04
+    environment: prod
     needs: [build]
     steps:
       - name: AtomiCloud CI Environment

@@ -4,6 +4,7 @@ using PitaPairing.Domain.Index;
 using PitaPairing.Domain.Module;
 using PitaPairing.Domain.Post;
 using PitaPairing.Domain.Semester;
+using PitaPairing.Domain.Suggestions;
 using PitaPairing.User;
 
 namespace PitaPairing.Database;
@@ -15,6 +16,8 @@ public class CoreDbContext : DbContext
     public DbSet<IndexData> Indexes { get; set; } = null!;
 
     public DbSet<PostData> Posts { get; set; } = null!;
+
+    public DbSet<TwoWaySuggestionData> TwoWaySuggestions { get; set; } = null!;
 
     public DbSet<ApplicationData> Applications { get; set; } = null!;
 
@@ -72,5 +75,8 @@ public class CoreDbContext : DbContext
         var application = modelBuilder.Entity<ApplicationData>();
         application.HasIndex(x => new { x.PostId, x.ApplierPostId })
             .IsUnique();
+
+        var twoway = modelBuilder.Entity<TwoWaySuggestionData>();
+        twoway.HasIndex(x => x.UniqueChecker).IsUnique();
     }
 }

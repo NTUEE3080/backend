@@ -13,12 +13,6 @@ jobs:
           - image-name: core
             dockerfile: Dockerfile
             context: .
-          - image-name: reverse_proxy
-            dockerfile: ./ops/services/traefik/Dockerfile
-            context: ./ops/services/traefik/
-          - image-name: adminer
-            dockerfile: ./ops/services/adminer/Dockerfile
-            context: ./ops/services/adminer/
     env:
       STRAT_DOCKER_IMAGE: ${{ matrix.image-name }}
       STRAT_DOCKERFILE: ${{ matrix.dockerfile }}
