@@ -80,6 +80,6 @@ jobs:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           DEPLOY_DOCKER_REGISTRY: docker.pkg.github.com
         run: nix-shell nix/shells.nix -A dev --run './scripts/ci/generate-credentials.sh ./.ssh/deploy_rsa && ./scripts/ci/deploy.sh'
-#      - name: Clean Up
-#        if: always()
-#        run: nix-shell -p coreutils --run './scripts/ci/clean-up-deploy.sh'
+      - name: Clean Up
+        if: always()
+        run: nix-shell -p coreutils --run './scripts/ci/clean-up-deploy.sh'
