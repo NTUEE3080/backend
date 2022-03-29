@@ -12,6 +12,8 @@ private_key="$PRIVATE_KEY_CONTENT"
 [ "$DEPLOY_DOCKER_USER" = "" ] && echo "DEPLOY_DOCKER_USER not found!" && exit 1
 [ "$DEPLOY_DOCKER_PASSWORD" = "" ] && echo "DEPLOY_DOCKER_PASSWORD not found!" && exit 1
 [ "$POSTGRES_USER" = "" ] && echo "POSTGRES_USER not found!" && exit 1
+[ "$AUTH0_AUDIENCE" = "" ] && echo "AUTH0_AUDIENCE not found!" && exit 1
+[ "$AUTH0_AUTHORITY" = "" ] && echo "AUTH0_AUTHORITY not found!" && exit 1
 [ "$POSTGRES_PASSWORD" = "" ] && echo "POSTGRES_PASSWORD not found!" && exit 1
 [ "$DEPLOY_DOCKER_REGISTRY" = "" ] && echo "DEPLOY_DOCKER_REGISTRY not found!" && exit 1
 

@@ -1,10 +1,12 @@
 env:
   POSTGRES_PASSWORD: password
   POSTGRES_USER: user
+  AUTH0_AUDIENCE: https://pitapair.dev
+  AUTH0_AUTHORITY: https://pitapair.jp.auth0.com/
 docker_images:
   CORE_IMAGE: kirinnee/pitapair-test
   REVERSEPROXY_IMAGE: traefik:v2.6
   ADMINER_IMAGE: adminer:4.8.1
 docker_user: kirinnee
-docker_password: pokemon1288
+docker_password: redacted
 docker_registry: docker.pkg.github.com
