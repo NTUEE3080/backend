@@ -17,7 +17,7 @@ public static class ThreeWaySuggestionMapper
     public static ThreeWaySuggestionResp ToResp(this ThreeWaySuggestion data)
     {
         var (guid, counter, userPrincipal, post1, post2, post3) = data;
-        return new ThreeWaySuggestionResp(guid, counter, userPrincipal.ToResp(), post1.ToResp(), post2.ToResp(),
+        return new ThreeWaySuggestionResp(guid, counter, post1.Props.Module.Props.CourseCode, userPrincipal.ToResp(), post1.ToResp(), post2.ToResp(),
             post3.ToResp());
     }
 }

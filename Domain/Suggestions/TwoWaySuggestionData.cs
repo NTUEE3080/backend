@@ -5,6 +5,7 @@ using PitaPairing.User;
 
 namespace PitaPairing.Domain.Suggestions;
 
+#pragma warning disable CS8618
 #pragma warning disable CS8601
 public record TwoWaySuggestionData
 {
@@ -26,17 +27,18 @@ public record TwoWaySuggestionData
     public Guid Id { get; set; }
 
     public long Counter { get; set; } = long.MinValue;
-    public string? UniqueChecker { get; set; }
+    public string UniqueChecker { get; set; }
 
     public Guid UserId { get; set; }
-    public UserData? User { get; set; }
+    public UserData User { get; set; }
 
     public Guid Post1Id { get; set; }
-    public PostData? Post1 { get; set; }
+    public PostData Post1 { get; set; }
 
     public Guid Post2Id { get; set; }
-    public PostData? Post2 { get; set; }
+    public PostData Post2 { get; set; }
 
     public long TimeStamp { get; set; }
 }
 #pragma warning restore CS8601
+#pragma warning restore CS8618

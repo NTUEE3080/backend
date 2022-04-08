@@ -8,6 +8,8 @@ namespace PitaPairing.Domain.Suggestions;
 public interface ISuggestionService
 {
     Task Add(Guid id);
+    Task<IEnumerable<TwoWaySuggestion>> GetTwo(Guid userId, Guid? connectorId, int? take);
+    Task<IEnumerable<ThreeWaySuggestion>> GetThree(Guid userId, Guid? connectorId, int? take);
 }
 
 public class SuggestionService : ISuggestionService
@@ -152,6 +154,78 @@ public class SuggestionService : ISuggestionService
                 Counter = x.Counter + 1,
             })
             .RunAsync();
+    }
 
+    public async Task<IEnumerable<TwoWaySuggestion>> GetTwo(Guid userId, Guid? connectorId, int? take)
+    {
+        TwoWaySuggestionData? connector = null;
+        if (connectorId != null)
+        {
+            connector = await _db.TwoWaySuggestions.FirstOrDefaultAsync(x => x.Id == connectorId);
+        }
+
+        var q = _db.TwoWaySuggestions
+            // user principal
+            .Include(x => x.User)
+
+            // post1 principal
+            .Include(x => x.Post1).ThenInclude(x => x.User)
+            .Include(x => x.Post1).ThenInclude(x => x.Index).ThenInclude(x => x.Info) // Index
+            .Include(x => x.Post1).ThenInclude(x => x.Module) // module principal
+            .Include(x => x.Post1).ThenInclude(x => x.LookingFor).ThenInclude(x => x.Info) // index list
+
+            // post1 principal
+            .Include(x => x.Post2).ThenInclude(x => x.User)
+            .Include(x => x.Post2).ThenInclude(x => x.Index).ThenInclude(x => x.Info) // Index
+            .Include(x => x.Post2).ThenInclude(x => x.Module) // module principal
+            .Include(x => x.Post2).ThenInclude(x => x.LookingFor).ThenInclude(x => x.Info) // index list
+            .Where(x => x.UserId == userId && !x.Post1.Completed && !x.Post2.Completed)
+            .OrderByDescending(x => x.TimeStamp)
+            .AsQueryable();
+
+        if (connector is { } c) q = q.Where(x => x.TimeStamp < c.TimeStamp);
+        if (take is { } t) q = q.Take(t);
+        var a = await q.ToArrayAsync();
+        return a.Select(x => x.ToDomain());
+    }
+
+    public async Task<IEnumerable<ThreeWaySuggestion>> GetThree(Guid userId, Guid? connectorId, int? take)
+    {
+        ThreeWaySuggestionData? connector = null;
+        if (connectorId != null)
+        {
+            connector = await _db.ThreeWaySuggestions.FirstOrDefaultAsync(x => x.Id == connectorId);
+        }
+
+        var q = _db.ThreeWaySuggestions
+            // user principal
+            .Include(x => x.User)
+
+            // post1 principal
+            .Include(x => x.Post1).ThenInclude(x => x.User)
+            .Include(x => x.Post1).ThenInclude(x => x.Index).ThenInclude(x => x.Info) // Index
+            .Include(x => x.Post1).ThenInclude(x => x.Module) // module principal
+            .Include(x => x.Post1).ThenInclude(x => x.LookingFor).ThenInclude(x => x.Info) // index list
+
+            // post1 principal
+            .Include(x => x.Post2).ThenInclude(x => x.User)
+            .Include(x => x.Post2).ThenInclude(x => x.Index).ThenInclude(x => x.Info) // Index
+            .Include(x => x.Post2).ThenInclude(x => x.Module) // module principal
+            .Include(x => x.Post2).ThenInclude(x => x.LookingFor).ThenInclude(x => x.Info) // index list
+
+            // post1 principal
+            .Include(x => x.Post3).ThenInclude(x => x.User)
+            .Include(x => x.Post3).ThenInclude(x => x.Index).ThenInclude(x => x.Info) // Index
+            .Include(x => x.Post3).ThenInclude(x => x.Module) // module principal
+            .Include(x => x.Post3).ThenInclude(x => x.LookingFor).ThenInclude(x => x.Info) // index list
+            .Where(x => x.UserId == userId && !x.Post1.Completed && !x.Post2.Completed && !x.Post3.Completed)
+            .OrderByDescending(x => x.TimeStamp)
+            .AsQueryable();
+
+        if (connector is { } c) q = q.Where(x => x.TimeStamp < c.TimeStamp);
+        if (take is { } t) q = q.Take(t);
+        var a = await q.ToArrayAsync();
+
+        return a.Select(x => x.ToDomain());
     }
 }

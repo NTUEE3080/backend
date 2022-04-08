@@ -1,6 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using PitaPairing.Auth;
 using PitaPairing.Database;
+using PitaPairing.Errors;
+using PitaPairing.User;
 using Serilog;
 
 namespace PitaPairing.Domain.Suggestions;
@@ -17,13 +21,93 @@ public class SuggestionController : ControllerBase
     private readonly ISuggestionService _suggestionService;
 
     // GET
-    public SuggestionController(ILogger<SuggestionController> l, CoreDbContext db, IMatchSearcher match, ISuggestionService suggestionService)
+    public SuggestionController(ILogger<SuggestionController> l, CoreDbContext db, IMatchSearcher match,
+        ISuggestionService suggestionService)
     {
         _l = l;
         _db = db;
         _match = match;
         _suggestionService = suggestionService;
     }
+
+    [Authorize(Policy = AuthPolicy.Admin)]
+    [HttpGet("admin/two/{userId:guid}")]
+    public async Task<ActionResult<IEnumerable<TwoWaySuggestionResp>>> AdminTwo(Guid userId, Guid? connectorId, int? take)
+    {
+        try
+        {
+            var suggestions = await _suggestionService.GetTwo(userId, connectorId, take);
+            return Ok(suggestions.Select(x => x.ToResp()));
+        }
+        catch (Exception e)
+        {
+            if (e is not BaseErrorException)
+                _l.LogCritical(e,
+                    "Failed to get two-way suggestions for user {@User}. Query Params: connecter: {@Connector}, take: {@Take}",
+                    null, connectorId, take);
+            throw;
+        }
+    }
+
+    [Authorize(Policy = AuthPolicy.Admin)]
+    [HttpGet("admin/three/{userId:guid}")]
+    public async Task<ActionResult<IEnumerable<ThreeWaySuggestionResp>>> AdminThree(Guid userId, Guid? connectorId, int? take)
+    {
+        try
+        {
+            var suggestions = await _suggestionService.GetThree(userId, connectorId, take);
+            return Ok(suggestions.Select(x => x.ToResp()));
+        }
+        catch (Exception e)
+        {
+            if (e is not BaseErrorException)
+                _l.LogCritical(e,
+                    "Failed to get two-way suggestions for user {@User}. Query Params: connecter: {@Connector}, take: {@Take}",
+                    null, connectorId, take);
+            throw;
+        }
+    }
+
+    [HttpGet("two")]
+    public async Task<ActionResult<IEnumerable<TwoWaySuggestionResp>>> GetTwo(Guid? connectorId, int? take)
+    {
+        try
+        {
+            var (guid, _) = await GetUser();
+            var suggestions = await _suggestionService.GetTwo(guid, connectorId, take);
+            return Ok(suggestions.Select(x => x.ToResp()));
+        }
+        catch (Exception e)
+        {
+            if (e is not BaseErrorException)
+                _l.LogCritical(e,
+                    "Failed to get two-way suggestions for user {@User}. Query Params: connecter: {@Connector}, take: {@Take}",
+                    null, connectorId, take);
+            throw;
+        }
+    }
+
+
+    [HttpGet("three")]
+    public async Task<ActionResult<IEnumerable<ThreeWaySuggestionResp>>> GetThree(Guid? connectorId, int? take)
+    {
+        try
+        {
+            var (guid, _) = await GetUser();
+            var suggestions = await _suggestionService.GetThree(guid, connectorId, take);
+            return Ok(suggestions.Select(x => x.ToResp()));
+        }
+        catch (Exception e)
+        {
+            if (e is not BaseErrorException)
+                _l.LogCritical(e,
+                    "Failed to get two-way suggestions for user {@User}. Query Params: connecter: {@Connector}, take: {@Take}",
+                    null, connectorId, take);
+            throw;
+        }
+    }
+
+
 
     [HttpGet("add/{source:guid}")]
     public async Task<ActionResult> Add(Guid source)
@@ -59,5 +143,25 @@ public class SuggestionController : ControllerBase
             _l.LogError(e, "error occured while searching");
             throw;
         }
+    }
+
+    [NonAction]
+    private async Task<UserPrincipal> GetUser()
+    {
+        var sub = Sub();
+        if (sub == null)
+            throw new UnauthorizedError("Unauthorized",
+                "Attempt to access protected API without valid Bearer containing 'sub'");
+        var user = await _db.Users.FirstOrDefaultAsync(x => x.Sub == sub);
+        if (user == null)
+            throw new UserNotRegisteredError("User Not Registered",
+                "User may have been registered on Auth server but not in backend server");
+        return user.ToPrincipal();
+    }
+
+    [NonAction]
+    private string? Sub()
+    {
+        return HttpContext.User?.Identity?.Name;
     }
 }

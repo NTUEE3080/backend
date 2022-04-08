@@ -4,8 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using PitaPairing.Database;
 using PitaPairing.Domain.Application;
+using PitaPairing.Domain.Suggestions;
 using PitaPairing.Errors;
 using PitaPairing.User;
+using Serilog;
 
 namespace PitaPairing.Domain.Post;
 
@@ -16,11 +18,13 @@ public class PostController : ControllerBase
 {
     private readonly ILogger<PostController> _l;
     private readonly CoreDbContext _db;
+    private readonly ISuggestionService _suggestionService;
 
-    public PostController(ILogger<PostController> l, CoreDbContext db)
+    public PostController(ILogger<PostController> l, CoreDbContext db, ISuggestionService suggestionService)
     {
         _l = l;
         _db = db;
+        _suggestionService = suggestionService;
     }
 
 
@@ -245,7 +249,10 @@ public class PostController : ControllerBase
             var r = await _db.Posts.AddAsync(data);
             await _db.SaveChangesAsync();
 
-            // var added = r.Entity.ToDomain().ToResp();
+            _l.LogInformation("Adding suggestions for source node: {@SourcePostId}", r.Entity.Id);
+            await _suggestionService.Add(r.Entity.Id);
+            _l.LogInformation("Completed adding suggestions for source node: {@SourcePostId}", r.Entity.Id);
+
             return Ok(null);
         }
         catch (Exception e)

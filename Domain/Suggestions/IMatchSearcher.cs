@@ -27,7 +27,7 @@ public class MatchSearcher : IMatchSearcher
     public async Task<IEnumerable<Guid>> Search(Guid s)
     {
         var source = await _db.Posts.FirstOrDefaultAsync(x => x.Id == s);
-        if (source == null) return Array.Empty<Guid>();
+        if (source == null || source.Completed) return Array.Empty<Guid>();
 
         var r = _db.Posts
             .Include(x => x.LookingFor)
@@ -35,7 +35,7 @@ public class MatchSearcher : IMatchSearcher
             .ThenInclude(x => x.LookingFor)
             .Where(x => x.Id == source.Id)
             .SelectMany(x => x.LookingFor.SelectMany(lf => lf.PrincipalPosts)) // 2nd layer posts
-            .Where(x => x.Id != source.Id) //remove Id from 2nd layer post
+            .Where(x => x.Id != source.Id && !x.Completed) //remove Id from 2nd layer post
             .Where(x => x.LookingFor.Select(lf => lf.Id).Contains(source.IndexId));
 
         return r.Select(x => x.Id);
@@ -44,7 +44,7 @@ public class MatchSearcher : IMatchSearcher
     public async Task<IEnumerable<TwoGuid>> SearchThree(Guid s)
     {
         var source = await _db.Posts.FirstOrDefaultAsync(x => x.Id == s);
-        if (source == null) return Array.Empty<TwoGuid>();
+        if (source == null || source.Completed) return Array.Empty<TwoGuid>();
         _l.LogInformation("Starting Search");
         var r = await _db.Posts
             .Include(x => x.LookingFor)
@@ -64,7 +64,7 @@ public class MatchSearcher : IMatchSearcher
                     )
                 )
             )
-            .Where(x => x.SearchingFor.Id == source.IndexId)
+            .Where(x => x.SearchingFor.Id == source.IndexId && !x.Second.Completed && !x.Third.Completed)
             .Select(x => new { Second = x.Second.Id, Third = x.Third.Id })
             .Distinct()
             .ToArrayAsync();

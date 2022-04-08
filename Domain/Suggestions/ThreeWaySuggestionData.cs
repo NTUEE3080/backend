@@ -5,10 +5,11 @@ using PitaPairing.User;
 
 namespace PitaPairing.Domain.Suggestions;
 
+#pragma warning disable CS8618
 #pragma warning disable CS8601
 public record ThreeWaySuggestionData
 {
-    public void Deconstruct(out Guid id, out long counter, out string? uniqueChecker, out Guid userId, out UserData? user, out Guid post1Id, out PostData? post1Data, out Guid post2Id, out PostData? post2Data, out Guid post3Id, out PostData? post3Data, out long timeStamp)
+    public void Deconstruct(out Guid id, out long counter, out string uniqueChecker, out Guid userId, out UserData user, out Guid post1Id, out PostData post1Data, out Guid post2Id, out PostData post2Data, out Guid post3Id, out PostData post3Data, out long timeStamp)
     {
         id = Id;
         counter = Counter;
@@ -28,20 +29,21 @@ public record ThreeWaySuggestionData
     public Guid Id { get; set; }
 
     public long Counter { get; set; } = long.MinValue;
-    public string? UniqueChecker { get; set; }
+    public string UniqueChecker { get; set; }
 
     public Guid UserId { get; set; }
-    public UserData? User { get; set; }
+    public UserData User { get; set; }
 
     public Guid Post1Id { get; set; }
-    public PostData? Post1 { get; set; }
+    public PostData Post1 { get; set; }
 
     public Guid Post2Id { get; set; }
-    public PostData? Post2 { get; set; }
+    public PostData Post2 { get; set; }
 
     public Guid Post3Id { get; set; }
-    public PostData? Post3 { get; set; }
+    public PostData Post3 { get; set; }
 
     public long TimeStamp { get; set; }
 }
 #pragma warning restore CS8601
+#pragma warning restore CS8618
