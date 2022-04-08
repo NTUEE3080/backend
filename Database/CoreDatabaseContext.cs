@@ -19,6 +19,8 @@ public class CoreDbContext : DbContext
 
     public DbSet<TwoWaySuggestionData> TwoWaySuggestions { get; set; } = null!;
 
+    public DbSet<ThreeWaySuggestionData> ThreeWaySuggestions { get; set; } = null!;
+
     public DbSet<ApplicationData> Applications { get; set; } = null!;
 
     public DbSet<SemesterData> Semester { get; set; } = null!;
@@ -54,7 +56,7 @@ public class CoreDbContext : DbContext
 
         post
             .HasOne(x => x.Index)
-            .WithMany()
+            .WithMany(p => p.PrincipalPosts)
             .HasForeignKey(p => p.IndexId);
 
         // Many to Many of Post and Indexes
@@ -77,6 +79,11 @@ public class CoreDbContext : DbContext
             .IsUnique();
 
         var twoway = modelBuilder.Entity<TwoWaySuggestionData>();
-        twoway.HasIndex(x => x.UniqueChecker).IsUnique();
+        twoway.HasIndex(x => new { x.UserId, x.UniqueChecker }).IsUnique();
+
+        var threeway = modelBuilder.Entity<ThreeWaySuggestionData>();
+        threeway.HasIndex(x => new { x.UserId, x.UniqueChecker }).IsUnique();
+
+
     }
 }

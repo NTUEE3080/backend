@@ -25,6 +25,7 @@ public class IndexController : ControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public ActionResult<IEnumerable<IndexRes>> GetAll(string semester, Guid? course, string? day, string? venue)
     {
         try
@@ -53,6 +54,7 @@ public class IndexController : ControllerBase
 
 
     [HttpGet("{id:guid}")]
+    [AllowAnonymous]
     public async Task<ActionResult<IndexRes>> Get(Guid id)
     {
         try

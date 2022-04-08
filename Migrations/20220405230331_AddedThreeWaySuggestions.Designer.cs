@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PitaPairing.Database;
@@ -11,9 +12,10 @@ using PitaPairing.Database;
 namespace PitaPairing.Migrations
 {
     [DbContext(typeof(CoreDbContext))]
-    partial class CoreDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220405230331_AddedThreeWaySuggestions")]
+    partial class AddedThreeWaySuggestions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -215,10 +217,19 @@ namespace PitaPairing.Migrations
                     b.Property<long>("Counter")
                         .HasColumnType("bigint");
 
+                    b.Property<Guid?>("Post1DataId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("Post1Id")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("Post2DataId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("Post2Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("Post3DataId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("Post3Id")
@@ -235,11 +246,11 @@ namespace PitaPairing.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Post1Id");
+                    b.HasIndex("Post1DataId");
 
-                    b.HasIndex("Post2Id");
+                    b.HasIndex("Post2DataId");
 
-                    b.HasIndex("Post3Id");
+                    b.HasIndex("Post3DataId");
 
                     b.HasIndex("UserId", "UniqueChecker")
                         .IsUnique();
@@ -250,12 +261,19 @@ namespace PitaPairing.Migrations
             modelBuilder.Entity("PitaPairing.Domain.Suggestions.TwoWaySuggestionData", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<long>("Counter")
                         .HasColumnType("bigint");
 
+                    b.Property<Guid?>("Post1DataId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("Post1Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("Post2DataId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("Post2Id")
@@ -272,9 +290,9 @@ namespace PitaPairing.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Post1Id");
+                    b.HasIndex("Post1DataId");
 
-                    b.HasIndex("Post2Id");
+                    b.HasIndex("Post2DataId");
 
                     b.HasIndex("UserId", "UniqueChecker")
                         .IsUnique();
@@ -398,23 +416,17 @@ namespace PitaPairing.Migrations
 
             modelBuilder.Entity("PitaPairing.Domain.Suggestions.ThreeWaySuggestionData", b =>
                 {
-                    b.HasOne("PitaPairing.Domain.Post.PostData", "Post1")
+                    b.HasOne("PitaPairing.Domain.Post.PostData", "Post1Data")
                         .WithMany()
-                        .HasForeignKey("Post1Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("Post1DataId");
 
-                    b.HasOne("PitaPairing.Domain.Post.PostData", "Post2")
+                    b.HasOne("PitaPairing.Domain.Post.PostData", "Post2Data")
                         .WithMany()
-                        .HasForeignKey("Post2Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("Post2DataId");
 
-                    b.HasOne("PitaPairing.Domain.Post.PostData", "Post3")
+                    b.HasOne("PitaPairing.Domain.Post.PostData", "Post3Data")
                         .WithMany()
-                        .HasForeignKey("Post3Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("Post3DataId");
 
                     b.HasOne("PitaPairing.User.UserData", "User")
                         .WithMany()
@@ -422,28 +434,24 @@ namespace PitaPairing.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Post1");
+                    b.Navigation("Post1Data");
 
-                    b.Navigation("Post2");
+                    b.Navigation("Post2Data");
 
-                    b.Navigation("Post3");
+                    b.Navigation("Post3Data");
 
                     b.Navigation("User");
                 });
 
             modelBuilder.Entity("PitaPairing.Domain.Suggestions.TwoWaySuggestionData", b =>
                 {
-                    b.HasOne("PitaPairing.Domain.Post.PostData", "Post1")
+                    b.HasOne("PitaPairing.Domain.Post.PostData", "Post1Data")
                         .WithMany()
-                        .HasForeignKey("Post1Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("Post1DataId");
 
-                    b.HasOne("PitaPairing.Domain.Post.PostData", "Post2")
+                    b.HasOne("PitaPairing.Domain.Post.PostData", "Post2Data")
                         .WithMany()
-                        .HasForeignKey("Post2Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("Post2DataId");
 
                     b.HasOne("PitaPairing.User.UserData", "User")
                         .WithMany()
@@ -451,9 +459,9 @@ namespace PitaPairing.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Post1");
+                    b.Navigation("Post1Data");
 
-                    b.Navigation("Post2");
+                    b.Navigation("Post2Data");
 
                     b.Navigation("User");
                 });
