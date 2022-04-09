@@ -149,6 +149,7 @@ public class PostController : ControllerBase
                 .Include(x => x.Post)
                 .ThenInclude(x => x.Offers)
                 .Include(x => x.ApplierPost)
+                .ThenInclude(x => x.Offers)
                 .FirstOrDefaultAsync(x => x.PostId == postId && appId == x.ApplierPostId);
 
             if (appl == null)
@@ -162,12 +163,19 @@ public class PostController : ControllerBase
 
             appl.Status = ApplicationStatus.Accepted.ToData();
             appl.Post.Completed = true;
+
             foreach (var offer in appl.Post.Offers)
             {
-                offer.Status = ApplicationStatus.Accepted.ToData();
+                if (offer.Id != appl.Id)
+                    offer.Status = ApplicationStatus.Rejected.ToData();
             }
 
             appl.ApplierPost.Completed = true;
+            foreach (var offer in appl.ApplierPost.Offers)
+            {
+                if (offer.Id != appl.Id)
+                    offer.Status = ApplicationStatus.Rejected.ToData();
+            }
             await _db.SaveChangesAsync();
             return NoContent();
         }
