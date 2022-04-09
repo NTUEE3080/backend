@@ -16,6 +16,8 @@ public record UserData
     public string Sub { get; set; }
     public string Email { get; set; }
 
+    public IEnumerable<DeviceData> Devices { get; set; }
+
     public void Deconstruct(out Guid id, out string name, out string email, out string sub)
     {
         id = this.Id;

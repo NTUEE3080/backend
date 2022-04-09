@@ -12,6 +12,8 @@ namespace PitaPairing.Database;
 public class CoreDbContext : DbContext
 {
     public DbSet<UserData> Users { get; set; } = null!;
+
+    public DbSet<DeviceData> Devices { get; set; } = null!;
     public DbSet<ModuleData> Modules { get; set; } = null!;
     public DbSet<IndexData> Indexes { get; set; } = null!;
 
@@ -84,6 +86,7 @@ public class CoreDbContext : DbContext
         var threeway = modelBuilder.Entity<ThreeWaySuggestionData>();
         threeway.HasIndex(x => new { x.UserId, x.UniqueChecker }).IsUnique();
 
-
+        var devices = modelBuilder.Entity<DeviceData>();
+        devices.HasIndex(x => x.DeviceToken).IsUnique();
     }
 }
