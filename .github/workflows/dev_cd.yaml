@@ -81,6 +81,7 @@ jobs:
           AUTH0_AUDIENCE: https://pitapair.dev
           AUTH0_AUTHORITY: https://pitapair.jp.auth0.com/
           DEPLOY_DOCKER_REGISTRY: docker.pkg.github.com
+          FCM_KEY: ${{ secrets.FCM_KEY }}
         run: nix-shell nix/shells.nix -A dev --run './scripts/ci/generate-credentials.sh ./.ssh/deploy_rsa && ./scripts/ci/deploy.sh'
       - name: Clean Up
         if: always()

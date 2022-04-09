@@ -3,6 +3,7 @@ env:
   POSTGRES_USER: user
   AUTH0_AUDIENCE: https://pitapair.dev
   AUTH0_AUTHORITY: https://pitapair.jp.auth0.com/
+  FCM_KEY: somekey
 docker_images:
   CORE_IMAGE: kirinnee/pitapair-test
   REVERSEPROXY_IMAGE: traefik:v2.6

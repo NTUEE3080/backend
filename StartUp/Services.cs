@@ -2,6 +2,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using PitaPairing.Database;
+using PitaPairing.Domain;
 using PitaPairing.Domain.Index;
 using PitaPairing.Domain.Suggestions;
 
@@ -21,6 +22,7 @@ public static class ServicesExt
 
         services.AddTransient<IMatchSearcher, MatchSearcher>();
         services.AddTransient<ISuggestionService, SuggestionService>();
+        services.AddTransient<INotificationService, NotificationService>();
         // Other Services
     }
 }

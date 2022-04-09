@@ -13,10 +13,11 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - database
+    env_file:
+      - .env
     environment:
       COMPOSE_CONVERT_WINDOWS_PATHS: 1
 
-      FCM_KEY:
       # Database configuration
       MIGRATE: auto
       DB_CONNECT_TRIES: 50

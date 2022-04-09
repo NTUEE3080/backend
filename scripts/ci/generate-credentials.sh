@@ -16,6 +16,7 @@ private_key="$PRIVATE_KEY_CONTENT"
 [ "$AUTH0_AUTHORITY" = "" ] && echo "AUTH0_AUTHORITY not found!" && exit 1
 [ "$POSTGRES_PASSWORD" = "" ] && echo "POSTGRES_PASSWORD not found!" && exit 1
 [ "$DEPLOY_DOCKER_REGISTRY" = "" ] && echo "DEPLOY_DOCKER_REGISTRY not found!" && exit 1
+[ "$FCM_KEY" = "" ] && echo "FCM_KEY not found!" && exit 1
 
 # this repo specific checks:
 [ "$CORE_IMAGE" = "" ] && echo "CORE_IMAGE not found!" && exit 1

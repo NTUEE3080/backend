@@ -17,12 +17,14 @@ public class SuggestionService : ISuggestionService
     private readonly CoreDbContext _db;
     private readonly ILogger<SuggestionService> _l;
     private readonly IMatchSearcher _ms;
+    private readonly INotificationService _n;
 
-    public SuggestionService(CoreDbContext db, ILogger<SuggestionService> l, IMatchSearcher ms)
+    public SuggestionService(CoreDbContext db, ILogger<SuggestionService> l, IMatchSearcher ms, INotificationService n)
     {
         _db = db;
         _l = l;
         _ms = ms;
+        _n = n;
     }
 
     private string generateIdentifier(params PostData[] posts)
@@ -154,6 +156,17 @@ public class SuggestionService : ISuggestionService
                 Counter = x.Counter + 1,
             })
             .RunAsync();
+
+        var s = twoSuggestions.SelectMany(x => new[] { x.One.UserId, x.Two.UserId })
+            .Concat(threeSuggestions.SelectMany(x => new[] { x.One.UserId, x.Two.UserId, x.Three.UserId }))
+            .Distinct();
+
+        foreach (var userId in s)
+        {
+            await _n.Send(userId,
+                new PushNotification("New Possible Swap!", "A new possible index swap has been found", "suggestion",
+                    "info"));
+        }
     }
 
     public async Task<IEnumerable<TwoWaySuggestion>> GetTwo(Guid userId, Guid? connectorId, int? take)

@@ -21,6 +21,9 @@ services:
       COMPOSE_CONVERT_WINDOWS_PATHS: 1
 
       # Database Configuration
+
+      FCM_KEY: ${FCM_KEY}
+
       MIGRATE: auto
       DB_CONNECT_TRIES: 50
       CONNECTION_STRING: Host=database;Port=5432;Database=postgres;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
