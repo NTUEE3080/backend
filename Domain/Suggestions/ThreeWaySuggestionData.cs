@@ -7,9 +7,9 @@ namespace PitaPairing.Domain.Suggestions;
 
 #pragma warning disable CS8618
 #pragma warning disable CS8601
-public record TwoWaySuggestionData
+public record ThreeWaySuggestionData
 {
-    public void Deconstruct(out Guid id, out long counter, out string uniqueChecker, out Guid userId, out UserData user, out Guid post1Id, out PostData post1Data, out Guid post2Id, out PostData post2Data, out long timeStamp)
+    public void Deconstruct(out Guid id, out long counter, out string uniqueChecker, out Guid userId, out UserData user, out Guid post1Id, out PostData post1Data, out Guid post2Id, out PostData post2Data, out Guid post3Id, out PostData post3Data, out long timeStamp)
     {
         id = Id;
         counter = Counter;
@@ -20,6 +20,8 @@ public record TwoWaySuggestionData
         post1Data = Post1;
         post2Id = Post2Id;
         post2Data = Post2;
+        post3Id = Post3Id;
+        post3Data = Post3;
         timeStamp = TimeStamp;
     }
 
@@ -37,6 +39,9 @@ public record TwoWaySuggestionData
 
     public Guid Post2Id { get; set; }
     public PostData Post2 { get; set; }
+
+    public Guid Post3Id { get; set; }
+    public PostData Post3 { get; set; }
 
     public long TimeStamp { get; set; }
 }

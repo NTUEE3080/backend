@@ -16,11 +16,13 @@ public class ApplicationController : ControllerBase
 {
     private readonly ILogger<ApplicationController> _l;
     private readonly CoreDbContext _db;
+    private readonly INotificationService _n;
 
-    public ApplicationController(CoreDbContext db, ILogger<ApplicationController> l)
+    public ApplicationController(CoreDbContext db, ILogger<ApplicationController> l, INotificationService n)
     {
         _db = db;
         _l = l;
+        _n = n;
     }
 
     [HttpGet]
@@ -54,7 +56,6 @@ public class ApplicationController : ControllerBase
         }
         catch (Exception e)
         {
-
             if (e is not BaseErrorException)
                 _l.LogCritical(e,
                     "Failed to list applications. Query:  PosterId: {@PosterId}, ModuleId: {@ModuleId}, IndexId: {@IndexId}",
@@ -70,12 +71,13 @@ public class ApplicationController : ControllerBase
         {
             var user = await GetUser();
             var post = await _db.Posts.FirstOrDefaultAsync(x => x.Id == appId);
-            if (post == null) throw new NotFoundError("Post Not Found", $"Applying post with id {appId} does not exist");
+            if (post == null)
+                throw new NotFoundError("Post Not Found", $"Applying post with id {appId} does not exist");
             if (post.UserId != user.Id)
                 throw new NoPermissionError("No permission", "Not owner of applying post");
 
             // create new application
-            var appl = new ApplicationData()
+            var appl = new ApplicationData
             {
                 PostId = postId,
                 ApplierPostId = appId,
@@ -83,6 +85,19 @@ public class ApplicationController : ControllerBase
             };
             await _db.Applications.AddAsync(appl);
             await _db.SaveChangesAsync();
+
+            var p = await _db.Posts
+                .Include(x => x.Module)
+                .FirstOrDefaultAsync(x => x.Id == postId);
+            var notif = new PushNotification(
+                "Someone made an offer!",
+                $"Someone made an offer for your index in {p!.Module.CourseCode}",
+                "offer",
+                "info"
+            );
+            await _n.Send(p.UserId, notif);
+
+
             return Ok();
         }
         catch (Exception e)
@@ -91,13 +106,19 @@ public class ApplicationController : ControllerBase
             {
                 DbUpdateException
                 {
-                    InnerException: PostgresException { SqlState: "23503", ConstraintName: "FK_Applications_Posts_PostId" }
+                    InnerException: PostgresException
+                    {
+                        SqlState: "23503", ConstraintName: "FK_Applications_Posts_PostId"
+                    }
                 } =>
                     new NotFoundError("Post Not Found",
                         $"Post with id {postId} does not exist"),
                 DbUpdateException
                 {
-                    InnerException: PostgresException { SqlState: "23505", ConstraintName: "IX_Applications_PostId_ApplierPostId" }
+                    InnerException: PostgresException
+                    {
+                        SqlState: "23505", ConstraintName: "IX_Applications_PostId_ApplierPostId"
+                    }
                 } =>
                     new UniqueConflictError("Application already exist",
                         $"A trade of '{postId}' => '{appId}' already exist"),

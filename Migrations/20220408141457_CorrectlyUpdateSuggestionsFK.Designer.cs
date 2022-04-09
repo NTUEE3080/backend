@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PitaPairing.Database;
@@ -11,9 +12,10 @@ using PitaPairing.Database;
 namespace PitaPairing.Migrations
 {
     [DbContext(typeof(CoreDbContext))]
-    partial class CoreDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220408141457_CorrectlyUpdateSuggestionsFK")]
+    partial class CorrectlyUpdateSuggestionsFK
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -209,6 +211,7 @@ namespace PitaPairing.Migrations
             modelBuilder.Entity("PitaPairing.Domain.Suggestions.ThreeWaySuggestionData", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<long>("Counter")
@@ -227,7 +230,6 @@ namespace PitaPairing.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<string>("UniqueChecker")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<Guid>("UserId")
@@ -265,7 +267,6 @@ namespace PitaPairing.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<string>("UniqueChecker")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<Guid>("UserId")
@@ -281,31 +282,6 @@ namespace PitaPairing.Migrations
                         .IsUnique();
 
                     b.ToTable("TwoWaySuggestions");
-                });
-
-            modelBuilder.Entity("PitaPairing.User.DeviceData", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("DeviceToken")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<long>("TimeStamp")
-                        .HasColumnType("bigint");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DeviceToken")
-                        .IsUnique();
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Devices");
                 });
 
             modelBuilder.Entity("PitaPairing.User.UserData", b =>
@@ -484,17 +460,6 @@ namespace PitaPairing.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("PitaPairing.User.DeviceData", b =>
-                {
-                    b.HasOne("PitaPairing.User.UserData", "User")
-                        .WithMany("Devices")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("PitaPairing.Domain.Index.IndexData", b =>
                 {
                     b.Navigation("Info");
@@ -514,11 +479,6 @@ namespace PitaPairing.Migrations
                     b.Navigation("Applications");
 
                     b.Navigation("Offers");
-                });
-
-            modelBuilder.Entity("PitaPairing.User.UserData", b =>
-                {
-                    b.Navigation("Devices");
                 });
 #pragma warning restore 612, 618
         }

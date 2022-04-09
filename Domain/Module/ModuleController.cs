@@ -27,6 +27,7 @@ public class ModuleController : ControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public ActionResult<IEnumerable<ModulePrincipalRes>> GetAll(string semester)
     {
         try
@@ -45,6 +46,7 @@ public class ModuleController : ControllerBase
 
 
     [HttpGet("{id:guid}")]
+    [AllowAnonymous]
     public async Task<ActionResult<ModuleRes>> Get(Guid id)
     {
         try

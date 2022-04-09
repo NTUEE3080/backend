@@ -14,6 +14,6 @@ public static class TwoWaySuggestionMapper
     public static TwoWaySuggestionResp ToResp(this TwoWaySuggestion data)
     {
         var (guid, counter, userPrincipal, post1, post2) = data;
-        return new TwoWaySuggestionResp(guid, counter, userPrincipal.ToResp(), post1.ToResp(), post2.ToResp());
+        return new TwoWaySuggestionResp(guid, counter, post1.Props.Module.Props.CourseCode, userPrincipal.ToResp(), post1.ToResp(), post2.ToResp());
     }
 }

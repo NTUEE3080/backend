@@ -21,6 +21,8 @@ public interface IGlobal
     /// Connection string for database
     /// </summary>
     public string ConnectionString { get; }
+
+    public string FCMKey { get; }
 }
 
 public class Global : IGlobal
@@ -54,4 +56,6 @@ public class Global : IGlobal
             return _configuration.GetConnectionString(key);
         }
     }
+
+    public string FCMKey => _configuration["FCM_KEY"] ?? throw new ApplicationException("No FCM Key specified");
 }

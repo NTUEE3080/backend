@@ -2,7 +2,9 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using PitaPairing.Database;
+using PitaPairing.Domain;
 using PitaPairing.Domain.Index;
+using PitaPairing.Domain.Suggestions;
 
 namespace PitaPairing.StartUp;
 
@@ -10,7 +12,7 @@ public static class ServicesExt
 {
     public static void AddAppServices(this IServiceCollection services, IGlobal global)
     {
-        // System-level 
+        // System-level
         services.AddSingleton<IGlobal>(global);
 
         // Database services
@@ -18,9 +20,9 @@ public static class ServicesExt
             options.UseNpgsql(global.ConnectionString));
         services.AddHostedService<DbMigratorHostedService>();
 
-        // Validation Services
-        // services.AddTransient<IValidator<CreateIndexReq>, IndexValidator>();
-
+        services.AddTransient<IMatchSearcher, MatchSearcher>();
+        services.AddTransient<ISuggestionService, SuggestionService>();
+        services.AddTransient<INotificationService, NotificationService>();
         // Other Services
     }
 }

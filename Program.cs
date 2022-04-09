@@ -1,6 +1,5 @@
 using System.Reflection;
 using FluentValidation;
-using FluentValidation;
 using FluentValidation.AspNetCore;
 using Hellang.Middleware.ProblemDetails;
 using PitaPairing.Auth;

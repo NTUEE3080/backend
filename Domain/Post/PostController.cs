@@ -1,11 +1,14 @@
+using FCM.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using PitaPairing.Database;
 using PitaPairing.Domain.Application;
+using PitaPairing.Domain.Suggestions;
 using PitaPairing.Errors;
 using PitaPairing.User;
+using Serilog;
 
 namespace PitaPairing.Domain.Post;
 
@@ -16,11 +19,16 @@ public class PostController : ControllerBase
 {
     private readonly ILogger<PostController> _l;
     private readonly CoreDbContext _db;
+    private readonly ISuggestionService _suggestionService;
+    private readonly INotificationService _notification;
 
-    public PostController(ILogger<PostController> l, CoreDbContext db)
+    public PostController(ILogger<PostController> l, CoreDbContext db, ISuggestionService suggestionService,
+        INotificationService notification)
     {
         _l = l;
         _db = db;
+        _suggestionService = suggestionService;
+        _notification = notification;
     }
 
 
@@ -142,9 +150,9 @@ public class PostController : ControllerBase
         {
             var (guid, _) = await GetUser();
             var appl = await _db.Applications
-                .Include(x => x.Post)
-                .ThenInclude(x => x.Offers)
-                .Include(x => x.ApplierPost)
+                .Include(x => x.Post).ThenInclude(x => x.Offers)
+                .Include(x => x.Post).ThenInclude(x => x.Module)
+                .Include(x => x.ApplierPost).ThenInclude(x => x.Offers)
                 .FirstOrDefaultAsync(x => x.PostId == postId && appId == x.ApplierPostId);
 
             if (appl == null)
@@ -158,13 +166,25 @@ public class PostController : ControllerBase
 
             appl.Status = ApplicationStatus.Accepted.ToData();
             appl.Post.Completed = true;
+
             foreach (var offer in appl.Post.Offers)
             {
-                offer.Status = ApplicationStatus.Accepted.ToData();
+                if (offer.Id != appl.Id)
+                    offer.Status = ApplicationStatus.Rejected.ToData();
             }
 
             appl.ApplierPost.Completed = true;
+            foreach (var offer in appl.ApplierPost.Offers)
+            {
+                if (offer.Id != appl.Id)
+                    offer.Status = ApplicationStatus.Rejected.ToData();
+            }
+
             await _db.SaveChangesAsync();
+
+            var n = new PushNotification("A swap succeeded!",
+                $"The swap you proposed for {appl.Post.Module.CourseCode} has succeeded", "swap_success", "info");
+            await _notification.Send(appl.ApplierPost.UserId, n);
             return NoContent();
         }
 
@@ -245,7 +265,10 @@ public class PostController : ControllerBase
             var r = await _db.Posts.AddAsync(data);
             await _db.SaveChangesAsync();
 
-            // var added = r.Entity.ToDomain().ToResp();
+            _l.LogInformation("Adding suggestions for source node: {@SourcePostId}", r.Entity.Id);
+            await _suggestionService.Add(r.Entity.Id);
+            _l.LogInformation("Completed adding suggestions for source node: {@SourcePostId}", r.Entity.Id);
+
             return Ok(null);
         }
         catch (Exception e)

@@ -6,6 +6,7 @@ includes:
   enter: ./scripts/enter.yml
   db: ./scripts/db.yml
   ide: ./scripts/ide.yml
+
 tasks:
   deploy:
     desc: Deploy to target machine
@@ -47,6 +48,7 @@ tasks:
       - task: start
   start:
     desc: Starts development server
+
     cmds:
       - docker compose up -d --build
   stop:

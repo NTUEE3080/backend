@@ -34,6 +34,8 @@ public record IndexData
     public string Code { get; set; }
     public Guid ModuleId { get; set; }
     public ModuleData Module { get; set; }
+
+    public IEnumerable<PostData> PrincipalPosts { get; set; }
     public IEnumerable<IndexPropsData> Info { get; set; }
     public IEnumerable<PostData> RelatedPosts { get; set; }
 
